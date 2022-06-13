@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+three () {
+    kscreen-doctor config \
+    output.HDMI-A-0.enable \
+    output.HDMI-A-0.mode.1920x1080@60 \
+    output.HDMI-A-0.position.0,0 \
+    \
+    output.DisplayPort-1.enable \
+    output.DisplayPort-1.mode.1920x1080@60 \
+    output.DisplayPort-1.position.1920,0 \
+    output.DisplayPort-1.primary \
+    \
+    output.HDMI-A-1.enable \
+    output.HDMI-A-1.mode.1920x1080@60 \
+    output.HDMI-A-1.position.3840,0
+}
+
+
+two () {
+    kscreen-doctor config \
+    output.HDMI-A-0.disable \
+    \
+    output.DisplayPort-1.enable \
+    output.DisplayPort-1.mode.1920x1080@60 \
+    output.DisplayPort-1.position.0,0 \
+    output.DisplayPort-1.primary \
+    \
+    output.HDMI-A-1.enable \
+    output.HDMI-A-1.mode.1920x1080@60 \
+    output.HDMI-A-1.position.1920,0
+}
+
+
+one () {
+    kscreen-doctor config \
+    output.HDMI-A-0.disable \
+    \
+    output.DisplayPort-1.disable \
+    \
+    output.HDMI-A-1.enable \
+    output.HDMI-A-1.mode.1920x1080@60 \
+    output.HDMI-A-1.position.0,0 \
+    output.HDMI-A-1.primary
+}
+
+
+SCRIPT_NAME="$(basename ${0})"
+
+_help_page () {
+    printf "Profile support for kscreen-doctor \n"
+    printf "    ${SCRIPT_NAME} [profile-name]: change display arrangement \n"
+    printf "    ${SCRIPT_NAME} --list -l:      list all profiles \n"
+    printf "    ${SCRIPT_NAME} --help -h:      show this help page \n"
+}
+
+# list functions, remove uneeded info and that don't begin with _
+_list_profiles () {
+    declare -F | awk '{print $NF}' | egrep -v "^_"
+}
+
+# check for flag- and long options
+[[ "${1}" == "--help" ]] || [[ "${1}" == "-h" ]] || [[ -z $1 ]] && _help_page     && exit 0
+[[ "${1}" == "--list" ]] || [[ "${1}" == "-l" ]]                && _list_profiles && exit 0
+
+# matching the exact string for output of _list_profiles
+if ! _list_profiles | grep "^${1}$" > /dev/null; then
+    printf "Profile \"${1}\" not found! \n"
+    exit 1
+fi
+
+printf "Trying to configure screens\n"
+${1} 2>/dev/null
